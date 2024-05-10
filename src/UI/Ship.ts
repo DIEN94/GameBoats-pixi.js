@@ -1,40 +1,46 @@
 import { Graphics } from "pixi.js";
-import { getRandomBoolean } from "../utils";
+import { colors, shipSize } from "../consts";
 
-export type ShipLoadType = "loaded" | "unloaded";
 export type ShipCargoType = "forCargo" | "withCargo";
 export type ShipLocationType = "sea" | "port";
 
-const colors: Record<ShipCargoType, number> = {
-  forCargo: 0xffbd01,
-  withCargo: 0xffbd01,
+const colorsShip: Record<ShipCargoType, number> = {
+  forCargo: colors.green,
+  withCargo: colors.red,
 };
 export class Ship extends Graphics {
-  settings = {
-    width: 60,
-    height: 25,
-  };
-
   cargoType: ShipCargoType;
-  loadType: ShipLoadType;
+  loaded: boolean;
   private _location: ShipLocationType = "sea";
   constructor(cargoType: ShipCargoType) {
     super();
     this.cargoType = cargoType;
-    this.loadType = cargoType === "withCargo" ? "loaded" : "loaded";
+    this.loaded = cargoType === "withCargo";
 
     this.drawShip();
   }
 
   private drawShip() {
-    this.rect(0, 0, this.width, this.height);
-    this.fill(colors[this.cargoType]);
-    this.stroke({ width: 10, color: colors[this.cargoType] });
+    this.rect(
+      shipSize.borderSize / 2,
+      shipSize.borderSize / 2,
+      shipSize.width,
+      shipSize.height
+    );
+    this.loaded && this.fill(colorsShip[this.cargoType]);
+    this.stroke({ width: 10, color: colorsShip[this.cargoType] });
   }
 
   public rotateShip(angle: number) {
     //rotateAnimation
   }
+
+  public changeLoadState(loaded: boolean) {
+    this.clear();
+    this.loaded = loaded;
+    this.drawShip();
+  }
+
   public loadShip = (v: boolean) => {};
   public set location(location: ShipLocationType) {
     this._location = location;

@@ -1,6 +1,5 @@
-import { getRandomBoolean } from "./../utils/randomBoolean";
-import { Container } from "pixi.js";
-import { Scene } from "./Scene";
+import { getRandomBoolean } from "../utils/randomBoolean";
+import { Scene } from "../Scene";
 import { Ship, ShipCargoType } from "./Ship";
 
 export class UI {
