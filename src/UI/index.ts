@@ -1,63 +1,88 @@
 import { getRandomBoolean } from "../utils/randomBoolean";
-import { Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite, Texture } from "pixi.js";
 import { Ship, ShipCargoType } from "./Ship";
 import { Pier } from "./Pier";
-import { pierSize, wallSize, gatesSize, colors } from "../consts";
-import { Scene } from './../Scene/index';
+import { pierSize, gatesSize, colors, shipSize } from "../consts";
+import { Scene } from "./../Scene/index";
 
-export class UI {
+export type PointType = {
+  x: number;
+  y: number;
+};
+
+export class UI extends Container {
+  public gates!: Sprite;
+  public piers: Pier[] = [];
+  private queuePoint: Record<ShipCargoType, PointType> = {
+    forCargo: {
+      x: 0,
+      y: 0,
+    },
+    withCargo: {
+      x: 0,
+      y: 0,
+    },
+  };
   constructor(private scene: Scene) {
-    //create start elements
+    super();
   }
 
-  public async init() {
-    const pier1 = new Pier("free");
-    pier1.x = 0;
-    pier1.y = (window.innerHeight - (pier1.height * 4 + pierSize.gap * 3)) / 2;
-    this.scene.app.stage.addChild(pier1);
+  public init() {
+    this.createPiers();
+    this.createGates();
+    this.createWalls();
 
-    const pier2 = new Pier("free");
-    pier2.x = 0;
-    pier2.y = pier1.y + pier1.height + pierSize.gap;
-    this.scene.app.stage.addChild(pier2);
+    this.calcShipQueuePoints();
+    this.scene.app.stage.addChild(this);
+  }
 
-    const pier3 = new Pier("free");
-    pier3.x = 0;
-    pier3.y = pier2.y + pier2.height + pierSize.gap;
-    this.scene.app.stage.addChild(pier3);
+  public createPiers() {
+    const piersNumber = 4;
+    const gap =
+      (this.scene.app.canvas.height - pierSize.height * piersNumber) /
+      (piersNumber + 1);
+    for (let i = 0; i < piersNumber; i++) {
+      this.piers[i] = new Pier(i);
+      this.piers[i].x = 0;
+      this.piers[i].y = (pierSize.height + gap) * i + gap;
+      this.addChild(this.piers[i]);
+    }
+  }
 
-    const pier4 = new Pier("free");
-    pier4.x = 0;
-    pier4.y = pier3.y + pier3.height + pierSize.gap;
-    this.scene.app.stage.addChild(pier4);
+  public createWalls() {
+    const wallWidth = 20;
+    const wallHeight = (this.scene.app.canvas.height - this.gates.height) / 2;
 
-    const wall = new Graphics();
-    wall.rect(300, 0, wallSize.width, wallSize.height);
-    wall.fill(colors.green);
-    this.scene.app.stage.addChild(wall);
-
-    const gates = new Graphics();
-
-    gates.rect(
-      300 + wallSize.width / 2 - gatesSize.width / 2,
-      wallSize.height / 2 - gatesSize.height / 2,
-      gatesSize.width,
-      gatesSize.height
+    const upperWall = new Graphics();
+    upperWall.rect(
+      this.gates.x + this.gates.width / 2 - wallWidth / 2,
+      0,
+      wallWidth,
+      wallHeight
     );
-    gates.fill(colors.background);
-    this.scene.app.stage.addChild(gates);
+    upperWall.fill(colors.green);
+    this.addChild(upperWall);
 
-    // const ship = new Ship("forCargo");
-    // this.app.stage.addChild(ship);
-    // console.log(ship);
+    const lowerWall = new Graphics();
+    lowerWall.rect(
+      this.gates.x + this.gates.width / 2 - wallWidth / 2,
+      this.gates.y + this.gates.height,
+      wallWidth,
+      wallHeight
+    );
+    lowerWall.fill(colors.green);
+    this.addChild(lowerWall);
+  }
 
-    // setTimeout(() => {
-    //   ship.changeLoadState(true);
-    // }, 2000);
-
-    // setTimeout(() => {
-    //   pier1.changeLoadState(false);
-    // }, 2000);
+  public createGates() {
+    this.gates = new Sprite(Texture.EMPTY);
+    this.gates.width = gatesSize.width;
+    this.gates.height = gatesSize.height;
+    this.gates.position.set(
+      400 - gatesSize.width / 2,
+      this.scene.app.canvas.height / 2 - gatesSize.height / 2
+    );
+    this.addChild(this.gates);
   }
 
   public createShip() {
@@ -65,14 +90,26 @@ export class UI {
       ? "forCargo"
       : "withCargo";
     const ship = new Ship(shipType);
-
-    ship.position.set(0, 0);
-    this.scene.app.stage.addChild(ship);
-
+    const { y } = this.getQueuePointByCargoType(shipType);
+    ship.position.set(this.getCanvasSize().width, y);
+    this.addChild(ship);
     return ship;
   }
 
-  directShip(ship: Ship) {
-    //tween
+  public getQueuePointByCargoType(type: ShipCargoType) {
+    return this.queuePoint[type];
+  }
+
+  public getCanvasSize() {
+    const { width, height } = this.scene.app.canvas;
+    return { width, height };
+  }
+
+  private calcShipQueuePoints() {
+    const { x, y, width, height } = this.gates;
+    this.queuePoint.forCargo.x = x + width + shipSize.width/2;
+    this.queuePoint.forCargo.y = y - shipSize.height/2;
+    this.queuePoint.withCargo.x = x + width + shipSize.width/2;
+    this.queuePoint.withCargo.y = y + height + shipSize.height/2;
   }
 }

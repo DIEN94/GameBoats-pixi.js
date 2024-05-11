@@ -1,18 +1,24 @@
 import { Application, Container, Graphics } from "pixi.js";
 import { colors } from "../consts";
 import { UI } from './../UI/index';
+import * as TWEEN from "@tweenjs/tween.js";
 
 export class Scene {
   public app: Application;
-  public ui: UI;
   constructor() {
     this.app = new Application();
-    this.ui = new UI(this);
   }
 
   public async init() {
-    await this.app.init({ background: colors.background, resizeTo: window });
+    await this.app.init({ background: colors.background, width: 1920, height:1080 });
     document.body.appendChild(this.app.canvas);
-    this.ui.init();
+
+    this.runUpdates()
+  }
+
+  private runUpdates() {
+    this.app.ticker.add(() => {
+      TWEEN.update();
+    })
   }
 }

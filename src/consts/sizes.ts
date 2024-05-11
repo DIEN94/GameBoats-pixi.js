@@ -1,5 +1,3 @@
-import { Scene } from "../Scene";
-
 export const shipSize = {
   width: 120,
   height: 60,
@@ -8,14 +6,8 @@ export const shipSize = {
 
 export const pierSize = {
   width: 60,
-  height: 120,
+  height: 150,
   borderSize: 10,
-  gap: 20
-};
-
-export const wallSize = {
-  width: 20,
-  height: window.innerHeight,
 };
 
 export const gatesSize = {
