@@ -1,6 +1,5 @@
 import { Application, Container, Graphics } from "pixi.js";
 import { colors } from "../consts";
-import { UI } from './../UI/index';
 import * as TWEEN from "@tweenjs/tween.js";
 
 export class Scene {

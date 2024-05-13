@@ -6,6 +6,7 @@ export type PierOccupationType = "occupied" | "free";
 export class Pier extends Graphics {
 loaded: boolean = false;
 occupationType: PierOccupationType = "free";
+reserved: boolean = false
 
 constructor(private _index:number) {
     super();

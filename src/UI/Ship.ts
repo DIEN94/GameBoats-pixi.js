@@ -11,6 +11,7 @@ const colorsShip: Record<ShipCargoType, number> = {
 export class Ship extends Graphics {
   cargoType: ShipCargoType;
   loaded: boolean;
+  currentPierIndex:number | null = null
   public location: ShipLocationType = "sea";
   constructor(cargoType: ShipCargoType) {
     super();
