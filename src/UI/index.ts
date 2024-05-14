@@ -107,9 +107,9 @@ export class UI extends Container {
 
   private calcShipQueuePoints() {
     const { x, y, width, height } = this.gates;
-    this.queuePoint.forCargo.x = x + width + shipSize.width/2;
-    this.queuePoint.forCargo.y = y - shipSize.height/2;
-    this.queuePoint.withCargo.x = x + width + shipSize.width/2;
-    this.queuePoint.withCargo.y = y + height + shipSize.height/2;
+    this.queuePoint.forCargo.x = x + width + shipSize.width / 2;
+    this.queuePoint.forCargo.y = y - shipSize.height / 2;
+    this.queuePoint.withCargo.x = x + width + shipSize.width / 2;
+    this.queuePoint.withCargo.y = y + height + shipSize.height / 2;
   }
 }

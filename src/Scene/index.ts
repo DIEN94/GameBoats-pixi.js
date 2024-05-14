@@ -9,15 +9,19 @@ export class Scene {
   }
 
   public async init() {
-    await this.app.init({ background: colors.background, width: 1920, height:1080 });
+    await this.app.init({
+      background: colors.background,
+      width: 1920,
+      height: 1080,
+    });
     document.body.appendChild(this.app.canvas);
 
-    this.runUpdates()
+    this.runUpdates();
   }
 
   private runUpdates() {
     this.app.ticker.add(() => {
       TWEEN.update();
-    })
+    });
   }
 }

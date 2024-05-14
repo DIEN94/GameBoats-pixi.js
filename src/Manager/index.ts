@@ -1,6 +1,7 @@
 import { Tween } from "@tweenjs/tween.js";
 import { UI } from "../UI";
 import { Ship, ShipCargoType } from "../UI/Ship";
+import { wait } from "../utils";
 
 type ActionsType = "start" | "toGates" | "load" | "return";
 
@@ -46,7 +47,6 @@ export class Manager {
             return;
           }
           availabilityPier.reserved = true;
-
           ship.currentPierIndex = availabilityPier.index;
           await this.gatesAnimation(ship);
           ship.location = "port";
@@ -75,11 +75,27 @@ export class Manager {
 
   private startAnimation(ship: Ship) {
     return new Promise<void>((resolve, reject) => {
+      const shipCargoType = ship.cargoType;
+      const parkingSpaceSize = ship.width + 20;
       const { x, y } = this.ui.getQueuePointByCargoType(ship.cargoType);
       const time = Math.abs(ship.x - x) / this.speed;
       const sendShipNearGates = new Tween(ship)
         .to({ x, y }, time)
         .onComplete(() => resolve())
+        .onUpdate((ship) => {
+          let xCurrentShip = ship.x;
+          if (this.generalQueue.length > 0) {
+            const shipsInQueue = this.generalQueue.filter((shipInQueue) => {
+               return shipInQueue.cargoType === shipCargoType;
+            });
+            const touchShipPoints = x + parkingSpaceSize * shipsInQueue.length;
+            if(touchShipPoints >= ship.x) {
+              sendShipNearGates.stop()
+              ship.x = touchShipPoints   
+              resolve()
+            }
+          }
+        })
         .start();
     });
   }
@@ -156,7 +172,8 @@ export class Manager {
         ) / this.speed;
       const sendShipToPier = new Tween(ship)
         .to({ x, y }, time)
-        .onComplete(() => {
+        .onComplete(async () => {
+          await wait(3000)
           ship.changeLoadState(!ship.loaded);
           this.ui.piers[index].changeLoadState(!this.ui.piers[index].loaded);
           return resolve();
@@ -172,6 +189,19 @@ export class Manager {
       let time =
         (this.ui.getCanvasSize().width - ship.x + ship.width / 2) / this.speed;
       const sendShipToPier = new Tween(ship)
+        .to({ x, y }, time)
+        .onComplete(() => resolve())
+        .start();
+    });
+  }
+
+  private moveQueue(ship: Ship) {
+    return new Promise<void>((resolve, reject) => {
+      const parkingSpaceSize = ship.width + 20;
+      const x = ship.x - parkingSpaceSize;
+      const y = ship.y;
+      const time = parkingSpaceSize / this.speed;
+      const moveShipInQueue = new Tween(ship)
         .to({ x, y }, time)
         .onComplete(() => resolve())
         .start();
@@ -208,18 +238,32 @@ export class Manager {
     if (value) {
       this.updateQueue();
     }
-  } 
+  }
   private updateQueue() {
-    let firstShipOfQueue = this.generalQueue[0];
-    if (firstShipOfQueue) {
+    let shipOfQueueIndex = this.generalQueue.findIndex((s) => {
       let isCanMove =
         this.gateIsFree &&
-        (firstShipOfQueue.location === "port" ||
-          this.getAvailabilityPier(firstShipOfQueue.cargoType));
-      if (isCanMove) {
-        this.generalQueue.splice(0, 1);
-        this.sendShip(firstShipOfQueue, "toGates");
-      }
+        (s.location === "port" || this.getAvailabilityPier(s.cargoType));
+
+      return isCanMove;
+    });
+    if (shipOfQueueIndex !== -1) {
+      const ship = this.generalQueue[shipOfQueueIndex]
+      this.generalQueue.splice(shipOfQueueIndex, 1);
+      ship.location === "sea" &&  this.updateQueueCoordinates(ship.cargoType)
+      this.sendShip(ship, "toGates");
+    }
+  }
+
+  private updateQueueCoordinates(shipCargoType: ShipCargoType) {
+    const shipsInQueue = this.generalQueue.filter(
+      (shipInQueue) => shipInQueue.cargoType === shipCargoType
+    );
+
+    if (shipsInQueue.length > 0) {
+      shipsInQueue.forEach((shipInQueue) => {
+        this.moveQueue(shipInQueue);
+      });
     }
   }
 }

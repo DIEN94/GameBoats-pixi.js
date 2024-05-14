@@ -11,7 +11,7 @@ const colorsShip: Record<ShipCargoType, number> = {
 export class Ship extends Graphics {
   cargoType: ShipCargoType;
   loaded: boolean;
-  currentPierIndex:number | null = null
+  currentPierIndex: number | null = null;
   public location: ShipLocationType = "sea";
   constructor(cargoType: ShipCargoType) {
     super();
@@ -34,14 +34,9 @@ export class Ship extends Graphics {
     this.stroke({ width: borderSize, color: colorsShip[this.cargoType] });
   }
 
-  public rotateShip(angle: number) {
-    //rotateAnimation
-  }
-
   public changeLoadState(loaded: boolean) {
     this.clear();
     this.loaded = loaded;
     this.drawShip();
   }
-
 }
